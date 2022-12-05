@@ -22,9 +22,8 @@ param location string = resourceGroup().location
 param runtime string = 'custom'
 
 var functionAppName = appName
-var hostingPlanName = appName
+var hostingPlanName = '${appName}-asp'
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
-var functionWorkerRuntime = runtime
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
@@ -43,10 +42,12 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
     name: 'Y1'
     tier: 'Dynamic'
   }
-  properties: {}
+  properties: {
+    reserved: true
+  }
 }
 
-resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
+resource functionApp 'Microsoft.Web/sites@2018-11-01' = {
   name: functionAppName
   location: location
   kind: 'functionapp,linux'
@@ -56,6 +57,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   properties: {
     serverFarmId: hostingPlan.id
     siteConfig: {
+      linuxFxVersion: ''
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
@@ -71,7 +73,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~2'
+          value: '~4'
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
@@ -79,7 +81,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionWorkerRuntime
+          value: runtime
         }
       ]
       ftpsState: 'FtpsOnly'
