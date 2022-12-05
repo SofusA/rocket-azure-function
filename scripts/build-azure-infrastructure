@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+if [ ! -f "./.env" ]; then
+  echo "File \"./.env\" doesn't exist. Please create the file and fill the following items: 
+    AZURE_FUNCTION_NAME='***'
+    AZURE_LOCATION='***'
+    AZURE_RESOURCE_GROUP='***'
+    AZURE_SUBSCRIPTION_ID='***'
+    AZURE_TENANT_ID='***'
+    GH_REPOSITORY='***/***'
+    "
+  exit 1
+fi
+
+set -o allexport; source ./.env; set +o allexport
+
+#az group create --resource-group testgroup ${AZURE_RESOURCE_GROUP} --location ${AZURE_LOCATION}
+az deployment group create --resource-group ${AZURE_RESOURCE_GROUP} --template-file "./scripts/deployment/az-function-app.bicep" --parameters appName=${AZURE_FUNCTION_NAME}
