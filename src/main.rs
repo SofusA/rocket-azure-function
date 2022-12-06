@@ -1,3 +1,5 @@
+use std::env;
+
 #[macro_use]
 extern crate rocket;
 
@@ -8,5 +10,14 @@ fn world() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/api", routes![world])
+    let port_key = "FUNCTIONS_CUSTOMHANDLER_PORT";
+    let port: u16 = match env::var(port_key) {
+        Ok(val) => val.parse().expect("Custom Handler port is not a number!"),
+        Err(_) => 3000,
+    };
+
+    let figment = rocket::Config::figment()
+        .merge(("port", port));
+
+    rocket::custom(figment).mount("/api", routes![world])
 }
