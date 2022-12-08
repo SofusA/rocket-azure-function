@@ -19,5 +19,15 @@ fn rocket() -> _ {
     let figment = rocket::Config::figment()
         .merge(("port", port));
 
-    rocket::custom(figment).mount("/api", routes![world])
+    let rocket = rocket::custom(figment).mount("/api", routes![world]);
+
+    let iter = rocket.routes();
+
+    for route in iter {
+        let path = route.uri.origin.path().raw();
+        println!("Routes:");
+        println!(">{:?}: {:?}", route.method, path);
+    };
+
+    rocket
 }
