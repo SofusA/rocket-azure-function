@@ -1,27 +1,44 @@
 mod routes_test;
-use rocket::{Rocket, Build};
+use std::collections::HashSet;
 
-pub fn get_routes(rocket: Rocket<Build>) -> Vec<Route> {
+use rocket::{Build, Rocket};
+
+pub fn get_routes(rocket: Rocket<Build>) -> EndPoint<'static> {
+    let mut routes = EndPoint {
+        route: "/".to_string(),
+        methods: vec![],
+        sub_routes: None,
+    };
+
     let iter = rocket.routes();
-    let mut routes: Vec<Route> = Vec::new();
-
     for route in iter {
         let method = method_to_internal_method(route.method);
-        let route_string = route.uri.origin.path().raw().to_string();
 
-        match routes.iter_mut().find(|x| x.route == route_string) {
-            Some(x) => x.methods.push(method),
-            None => routes.push(Route { methods: vec![method], route: route_string})
-        }; 
-    };
+        for sub_route in route.uri.origin.path().raw().split('/') {
+            match  {
+                
+            }
+
+        }
+
+        routes.push(Route {
+            method: method_to_internal_method(route.method),
+            route: sub_routes,
+        });
+    }
 
     return routes;
 }
 
-#[derive(Debug, PartialEq)]
-pub struct Route {
+fn create_endpoint(method: Method, route: String) -> EndPoint<'static> {
+    EndPoint { route: route, methods: vec![method], sub_routes: None }
+}
+
+#[derive(Debug)]
+pub struct EndPoint<'a> {
+    pub route: String,
     pub methods: Vec<Method>,
-    pub route: String 
+    pub sub_routes: Option<Vec<&'a EndPoint<'a>>>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -48,5 +65,5 @@ pub fn method_to_internal_method(method: rocket::http::Method) -> Method {
         rocket::http::Method::Trace => Method::Trace,
         rocket::http::Method::Connect => Method::Connect,
         rocket::http::Method::Patch => Method::Patch,
-    }
+    };
 }
